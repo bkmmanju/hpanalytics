@@ -2,9 +2,6 @@
 	font-size:50px; padding-top:20px; padding-bottom:20px;
 }
 .engageenrollments {
-	-webkit-box-shadow: 3px 3px 5px 6px #ccc;  
--moz-box-shadow:    3px 3px 5px 6px #ccc; 
-box-shadow:         3px 3px 5px 6px #ccc;
 width: 100%;
 height: auto;
 min-height:160px;
@@ -18,18 +15,13 @@ width: 100%;
 height: 300px;
 }
 .enrollments{
--webkit-box-shadow: 3px 3px 5px 6px #ccc;  
--moz-box-shadow:    3px 3px 5px 6px #ccc; 
-box-shadow:         3px 3px 5px 6px #ccc;
 width: 100%;
 height: auto;
-min-height:350px;
+min-height:200px;
+border: 2px white;
+border-style: groove;
 }
 .rings{
--webkit-box-shadow: 3px 3px 5px 6px #ccc;  
--moz-box-shadow:    3px 3px 5px 6px #ccc; 
-box-shadow:         3px 3px 5px 6px #ccc;
-
 }
 .counter{
 background-color: #1177d1 !important;

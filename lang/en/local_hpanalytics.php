@@ -134,7 +134,9 @@ $string['ebsco_search_time'] = 'Search Time';
 $string['date_report'] = 'Monthly Report';
 
 
-
+//rachita: I made changes on 29-01-2021.
+$string['fromdate'] = 'Select start date';
+$string['todate'] = 'Select end date';
 
 
 

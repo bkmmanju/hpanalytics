@@ -72,11 +72,13 @@ if(!($capmanger || is_siteadmin())){
 			redirect($redirecturl);
 		}
 		$alldata = get_all_categories_enrol_and_completion_count($data);
+		//getting data for hpcl category chart.
+		$hpclcatchart = get_all_courses_enrollment_completiondata($data);
 		$alltechcourses = get_technical_cat_course_stats($data);
 		$result = loginuser_details_analytics($data);
 		//for zone
 		$allzonedata = get_chartdata_of_allzones($data);
-	//get the total magzter count so far
+		//get the total magzter count so far
 		$magzcounter = 10;
 		$magzcount = $DB->get_record_sql("Select sum(counter) as totalmagz from {hpclmagzcounter} WHERE (timecreated between $data->reportstart and $data->reportend)");
 		//$magzcount = $DB->get_record_sql("Select sum(counter) as totalmagz from {hpclmagzcounter}");
@@ -95,7 +97,9 @@ if(!($capmanger || is_siteadmin())){
 		$alldate->reportstart= $recips->firstaccess;
 		$alldate->reportend= time();
 		$alldata = get_all_categories_enrol_and_completion_count($alldate);
-		
+		//print_object($alldata);die;
+		//getting data for hpcl category chart.
+		$hpclcatchart = get_all_courses_enrollment_completiondata($alldate);
 		$allzonedata = get_chartdata_of_allzones($alldate);
 		
 		$alltechcourses = get_technical_cat_course_stats($alldate);
@@ -117,68 +121,34 @@ if(!($capmanger || is_siteadmin())){
 	
 	$yearwiseloggs = get_loggedin_data_yearwise();
 	$monthwiseloggs = get_loggedin_data_monthise();
-	
-	$data = html_writer::start_div('container');
-	$data .= html_writer::start_div('row');
-	
-	$data .= html_writer::start_div('col-md-3');//Average time spent
-	/*
-	$data .= html_writer::start_div('card text-white1  engageenrollments');
-	$data .= html_writer::start_div('card-header text-center');
-	$data .= get_string('engageheading3', 'local_hpanalytics');
-	$data .= html_writer::end_div();//end header
-	$data .= html_writer::start_div('card-body bg-warning text-center');
-	$data .= '<i class="fa fa-flag flagstyle"></i> &nbsp;<h1>'.$contentlogintoday.'</h1></br>'.get_string('engageone','local_hpanalytics');
-	$data .= html_writer::end_div();
-	$data .= html_writer::end_div();//end card-body
-	*/
-	$data .= html_writer::end_div();//end column
 
-	
-	$data .= html_writer::start_div('col-md-3');//Average time spent
-	$data .= html_writer::start_div('card text-white1  engageenrollments');
+	$data = html_writer::start_tag('hr',array('class'=>'pt-5 pb-5'));
+	$data .= html_writer::start_div('container');
+	$data .= html_writer::start_div('row');
+
+	$data .= html_writer::start_div('col-md-4');//Average time spent
+	$data .= html_writer::start_div('card text-white1  engageenrollments enrollments');
 	$data .= html_writer::start_div('card-header text-center');
 	$data .= get_string('engageheading1', 'local_hpanalytics');
 	$data .= html_writer::end_div();//end header
-	$data .= html_writer::start_div('card-body bg-primary text-center');
-	$data .= '<i class="fa fa-flag flagstyle" ></i> &nbsp;<h1>'.$contentsofar.'</h1></br>'.get_string('engageone','local_hpanalytics');
+	$data .= html_writer::start_div('card-body text-center');
+	$data .= '<i class="fa fa-hand-pointer-o flagstyle" aria-hidden="true"></i> &nbsp;<h1>'.$contentsofar.'</h1>'.get_string('engageone','local_hpanalytics');
 	$data .= html_writer::end_div();
 	$data .= html_writer::end_div();//end card-body
-	$data .= html_writer::end_div();//end column
-	
-	$data .= html_writer::start_div('col-md-3');//Average time spent
-	$data .= html_writer::start_div('card text-white1  engageenrollments');
+	$data .= html_writer::end_div();//end card-body
+
+	$data .= html_writer::start_div('col-md-4');//Average time spent
+	$data .= html_writer::start_div('card text-white1  engageenrollments enrollments');
 	$data .= html_writer::start_div('card-header text-center');
 	$data .= get_string('engageheading2', 'local_hpanalytics');
 	$data .= html_writer::end_div();//end header
 	$data .= html_writer::start_div('card-body bg-secondary text-center');
-	$data .= '<i class="fa fa-flag flagstyle"></i> &nbsp;<h1>'.$contentuniq.'</h1></br>'.get_string('engageone','local_hpanalytics');
+	$data .= '<i class="fa fa-flag flagstyle"></i> &nbsp;<h1>'.$contentuniq.'</h1>'.get_string('engageone','local_hpanalytics');
 	$data .= html_writer::end_div();
 	$data .= html_writer::end_div();//end card-body
 	$data .= html_writer::end_div();//end column
-	
-	
-	$data .= html_writer::start_div('col-md-3');//Average time spent
-	
-	/*
-	$data .= html_writer::start_div('card text-white1  engageenrollments');
-	$data .= html_writer::start_div('card-header text-center');
-	$data .= get_string('engageheading4', 'local_hpanalytics');
-	$data .= html_writer::end_div();//end header
-	$data .= html_writer::start_div('card-body bg-success text-center');
-	$data .= '<i class="fa fa-flag flagstyle"></i> &nbsp;<h1>'.$contentmagzter.'</h1></br>'.get_string('engageone','local_hpanalytics');
-	$data .= html_writer::end_div();
-	$data .= html_writer::end_div();//end card-body
-	$data .= html_writer::end_div();//end column
-	$data .= html_writer::end_div();//end row
-	*/
-	$data .= html_writer::end_div();//end container
-	
-	
 
-	$data .= html_writer::start_div('container',array('onload'=>'chartFunction()'));
-	$data .= html_writer::start_div('row');
-	$data .= html_writer::start_div('col-md-6 col-sm-6 col-xs-12');
+	$data .= html_writer::start_div('col-md-4 col-sm-4 col-xs-12');
 	$data .= html_writer::start_div('card enrollments');
 	$data .= html_writer::start_div('card-header text-center');
 	$data .= get_string('topvideocourse', 'local_hpanalytics').html_writer::start_tag('a',array('href'=>$courseurl));
@@ -186,18 +156,35 @@ if(!($capmanger || is_siteadmin())){
 	$data .= html_writer::end_tag('a');
 	$data .= html_writer::end_div();//end header
 	$data .= html_writer::start_div('card-body text-center');
-	$data .= html_writer::start_tag('img',array('src'=>$courseimage,'width'=>'90%'));
+	$data .= html_writer::start_tag('img',array('src'=>$courseimage,'width'=>'75%'));
 	$data .= html_writer::end_div();//end card-body
 	$data .= html_writer::end_div();//card ends
-	$data .= html_writer::end_div();//end column
 
-	$data .= html_writer::start_div('col-md-6 col-sm-6 col-xs-12');
+	$data .= html_writer::end_div();//end column
+	$data .= html_writer::end_div();//end row
+
+	$data .= html_writer::start_div('container',array('onload'=>'chartFunction()'));
+	$data .= html_writer::start_div('row');
+
+	// $data .= html_writer::start_div('col-md-6 col-sm-6 col-xs-12');
+	// $data .= html_writer::start_div('card enrollments');
+	// $data .= html_writer::start_div('card-header text-center');
+	// $data .= get_string('coursecompletion', 'local_hpanalytics');
+	// $data .= html_writer::end_div();//end header
+	// $data .= html_writer::start_div('card-body');
+	// $data .= html_writer::start_tag('canvas',array('id'=>'canvas'));
+	// $data .= html_writer::end_tag('canvas');
+	// $data .= html_writer::end_div();//end card-body
+	// $data .= html_writer::end_div();//card ends
+	// $data .= html_writer::end_div();//end column
+
+	$data .= html_writer::start_div('col-md-12 col-sm-6 col-xs-12');
 	$data .= html_writer::start_div('card enrollments');
 	$data .= html_writer::start_div('card-header text-center');
 	$data .= get_string('coursecompletion', 'local_hpanalytics');
 	$data .= html_writer::end_div();//end header
 	$data .= html_writer::start_div('card-body');
-	$data .= html_writer::start_tag('canvas',array('id'=>'canvas'));
+	$data .= html_writer::start_tag('canvas',array('id'=>'canvas1'));
 	$data .= html_writer::end_tag('canvas');
 	$data .= html_writer::end_div();//end card-body
 	$data .= html_writer::end_div();//card ends
@@ -312,6 +299,54 @@ echo $OUTPUT->footer();
 					data: [<?php 
 						$i =0;
 						foreach ($alldata as $key => $value) {
+							if($i!=0){
+								echo ',';
+							}
+							echo $value['complete'];
+							$i++;
+						}
+						?>]
+					}
+					]
+				};
+
+	var barChartData0 = {
+		labels: [<?php 
+			$i =0;
+			foreach ($hpclcatchart as $key => $value) {
+				if($i!=0){
+					echo ',';
+				}
+				echo '"'.$key.'"';
+				$i++;
+			}
+			?>
+			],
+			datasets: [
+			{
+				label: "Course enrollments",
+				backgroundColor: "pink",
+				borderColor: "red",
+				borderWidth: 1,
+				data: [<?php 
+					$i =0;
+					foreach ($hpclcatchart as $key => $value) {
+						if($i!=0){
+							echo ',';
+						}
+						echo $value['enrol'];
+						$i++;
+					}
+					?>]
+				},
+				{
+					label: "Course Completions",
+					backgroundColor: "lightblue",
+					borderColor: "blue",
+					borderWidth: 1,
+					data: [<?php 
+						$i =0;
+						foreach ($hpclcatchart as $key => $value) {
 							if($i!=0){
 								echo ',';
 							}
@@ -484,6 +519,21 @@ var chartOptions = {
 		}]
 	}
 }
+
+//options for chart 0.
+var chartOptions0 = {
+	responsive: true,
+	legend: {
+		position: "top"
+	},
+	scales: {
+		yAxes: [{
+			ticks: {
+				beginAtZero: true
+			}
+		}]
+	}
+}
 //options for chart 2.
 var chartOptions1 = {
 	responsive: true,
@@ -540,16 +590,22 @@ var chartOptions4 = {
 }
 
 window.onload = function() {
-	var ctx = document.getElementById("canvas").getContext("2d");
+	// var ctx = document.getElementById("canvas").getContext("2d");
+	var ctx0 = document.getElementById("canvas1").getContext("2d");
 	var ctx1 = document.getElementById("canvas-tech").getContext("2d");
 	var ctx2 = document.getElementById("canvas-zone").getContext("2d");
 	var ctx3 = document.getElementById("canvas-yearlog").getContext("2d");
 	var ctx4 = document.getElementById("canvas-monthlog").getContext("2d");
 
-	window.myBar = new Chart(ctx, {
+	// window.myBar = new Chart(ctx, {
+	// 	type: "bar",
+	// 	data: barChartData,
+	// 	options: chartOptions
+	// });
+	window.myBar = new Chart(ctx0, {
 		type: "bar",
-		data: barChartData,
-		options: chartOptions
+		data: barChartData0,
+		options: chartOptions0
 	});
 	window.myBar = new Chart(ctx1, {
 		type: "bar",

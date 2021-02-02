@@ -40,8 +40,8 @@ class local_hpanalytics_engage_form extends moodleform {
             'timezone'  => 99,
             'optional'  => false
         );
-        $mform->addElement('date_selector', 'reportstart', get_string('from'), $date_options);
-        $mform->addElement('date_selector', 'reportend', get_string('to'), $date_options);
+        $mform->addElement('date_selector', 'reportstart', get_string('fromdate','local_hpanalytics'), $date_options);
+        $mform->addElement('date_selector', 'reportend', get_string('todate','local_hpanalytics'), $date_options);
 
         $buttonarray=array();
         $buttonarray[] = $mform->createElement('submit', 'submitbutton', get_string('submit'));

@@ -619,7 +619,7 @@ function get_course_completion($allcourseid,$startdate,$enddate,$institution,$ci
 		$query ="SELECT c.fullname, COUNT(cc.id) AS completion FROM {course} c
 		JOIN {course_completions} cc ON cc.course = c.id 
 		JOIN {user} u ON cc.userid = u.id 
-		Where cc.course = ? AND (cc.timecompleted>=?)
+		Where cc.course = ? AND (cc.timecompleted>=?) AND cc.timecompleted is not null AND c.visible = 1  
 		$instquery
 		$cityquery
 		$departquery
@@ -629,11 +629,24 @@ function get_course_completion($allcourseid,$startdate,$enddate,$institution,$ci
 		$query ="SELECT c.fullname, COUNT(cc.id) AS completion FROM {course} c
 		JOIN {course_completions} cc ON cc.course = c.id 
 		JOIN {user} u ON cc.userid = u.id 
-		Where cc.course = ? AND (cc.timecompleted>=? AND cc.timecompleted<=?)
+		Where cc.course = ? AND (cc.timecompleted BETWEEN ? AND ? AND cc.timecompleted is not null AND c.visible = 1)
 		$instquery
 		$cityquery
 		$departquery
 		GROUP BY c.id ORDER BY c.fullname";
+
+		$query111 = "";
+
+
+
+		$query123="SELECT cc.id, u.username, u.firstname, u.lastname, u.email, ch.hours as CDuration, ch.hpclcategory,ch.coursecode, c.fullname, cc.timeenrolled as timeenrolled, 
+		FROM_UNIXTIME(cc.timecompleted) as timecompleted,ch.facultycode,ch.learnigtype,ch.programtype,ch.vendor,ch.summativeassessment  
+		FROM {course} AS c
+		JOIN {hpcl_coursehours} as ch ON c.id = ch.course_id
+		JOIN {course_completions} AS cc ON cc.course = c.id 
+		JOIN {user} AS u ON u.id = cc.userid
+		WHERE (cc.timecompleted BETWEEN '$startdate' AND '$enddate')
+		ORDER by cc.timeenrolled";
 		$record = $DB->get_record_sql($query,array($allcourseid,$startdate,$enddate));
 	}
 	return $record;
@@ -1367,6 +1380,7 @@ function get_course_completion_count_engage($allcourseids,$data){
 			$completionrecords[$allcompletioncount->fullname] = $allcompletioncount->completion;
 		}
 	}
+	//print_object($completionrecords);die;
 	return $completionrecords;
 }
 
@@ -1889,4 +1903,71 @@ function get_loggedin_data_monthise(){
 		$finalreturnarray[$yeararryreverse[$yi]]=$aaa;
 	}
 	return $finalreturnarray;
+}
+//getting the completion count for hpcl categories.
+function hpcl_categories_completion_count($courseid,$data,$category){
+	global $DB;
+	$startdate = $data->reportstart;
+	$enddate = $data->reportend;
+	$counter=1;
+	$instring="";
+	foreach ($courseid as $cid) {
+		if($counter == 1){
+			$instring = "'".$cid."'";
+		}else{
+			$instring =$instring.","."'".$cid."'";
+		}
+		$counter++;
+	}
+	$query="SELECT cc.id, u.username, u.firstname, u.lastname, u.email, ch.hours as CDuration, ch.hpclcategory,ch.coursecode, c.fullname, cc.timeenrolled as timeenrolled, 
+	FROM_UNIXTIME(cc.timecompleted) as timecompleted,ch.facultycode,ch.learnigtype,ch.programtype,ch.vendor,ch.summativeassessment  
+	FROM {course} AS c
+	JOIN {hpcl_coursehours} as ch ON c.id = ch.course_id
+	JOIN {course_completions} AS cc ON cc.course = c.id 
+	JOIN {user} AS u ON u.id = cc.userid
+	WHERE (cc.timecompleted BETWEEN '$startdate' AND '$enddate')
+	AND cc.course IN (".$instring.") AND ch.hpclcategory = '$category'
+	ORDER by cc.timeenrolled";
+	$record = $DB->get_records_sql($query);
+	return $record;
+}
+
+
+//s
+function get_all_courses_enrollment_completiondata($data){
+	global $DB;
+	//rachita: getting all the distinct categories from the course hours table.
+	$categories = $DB->get_records_sql("SELECT  DISTINCT hpclcategory AS category from {hpcl_coursehours}");
+	$final_array = [];
+	//checking for the value.
+	if(!empty($categories)){
+		//getting individual categories.
+		foreach ($categories as $category) {
+			//getting all the courses related to the category.
+			$courses = $DB->get_records_sql("SELECT course_id FROM {hpcl_coursehours} WHERE hpclcategory = '$category->category'");
+			//counter for course enrollment.
+			$enrolcounter = 0;
+			//counter for course completion.
+			$completioncounter = 0;
+
+			$countarray = [];
+			//checkimg for value.
+			if(!empty($courses)){
+				//getting individual courses.
+				$courseid = [];
+				foreach ($courses as $course) {
+					$courseid[] = $course->course_id;
+					//get the enrolcount of this course.
+					$enrolcount = count(all_enrolled_usersdata($course->course_id));
+					///adding the enrol count to the counter.
+					$enrolcounter = $enrolcounter + $enrolcount;
+				}
+				$completioncount = count(hpcl_categories_completion_count($courseid,$data,$category->category));
+				if($category->category != ""){
+					$final_array[$category->category]=array('enrol'=>$enrolcounter,'complete'=>$completioncount);
+				}
+			}
+		}
+		return $final_array;
+	}
 }
